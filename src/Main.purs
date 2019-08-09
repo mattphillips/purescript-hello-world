@@ -27,23 +27,25 @@ type PersonRepo m =
 
 type Store = Ref (HashMap PersonId (Person PersonId))
 
-inMemoryPersonRepo :: Store -> PersonRepo Effect
-inMemoryPersonRepo store = { create, get }
+createInMemoryPersonRepo :: Effect (PersonRepo Effect)
+createInMemoryPersonRepo = inMemoryPersonRepo <$> new empty
   where
-  create :: forall a. Person a -> Effect (Person PersonId)
-  create {name} = do
-    id <- random
-    let p = { name, id: PersonId(toString id) }
-    modify_ (\db -> insert p.id p db) store
-    pure p
+  inMemoryPersonRepo :: Store -> PersonRepo Effect
+  inMemoryPersonRepo store = { create, get }
+    where
+    create :: forall a. Person a -> Effect (Person PersonId)
+    create {name} = do
+      id <- random
+      let p = { name, id: PersonId(toString id) }
+      modify_ (\db -> insert p.id p db) store
+      pure p
 
-  get :: PersonId -> Effect (Maybe(Person PersonId))
-  get id = (\db -> lookup id db) <$> read store
+    get :: PersonId -> Effect (Maybe(Person PersonId))
+    get id = (\db -> lookup id db) <$> read store
 
 main :: Effect Unit
 main = do
-  store <- new empty
-  let repo = inMemoryPersonRepo store
+  repo <- createInMemoryPersonRepo
   p <- repo.create { id: unit, name: Name("Matt") }
   mp <- repo.get p.id
   logShow mp
