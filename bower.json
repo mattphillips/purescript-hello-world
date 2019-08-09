@@ -10,7 +10,12 @@
     "purescript-prelude": "^4.1.1",
     "purescript-console": "^4.2.0",
     "purescript-effect": "^2.0.1",
-    "purescript-arrays": "^5.3.0"
+    "purescript-arrays": "^5.3.0",
+    "purescript-maybe": "^4.0.1",
+    "purescript-unordered-collections": "^1.8.2",
+    "purescript-refs": "^4.1.0",
+    "purescript-numbers": "^7.0.0",
+    "purescript-random": "^4.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0"
