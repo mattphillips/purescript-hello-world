@@ -1,7 +1,9 @@
 module Main (main) where
 
-import Data.Array (filter)
 import Data.Eq
+
+import Data.Array (filter)
+import Data.Function (const)
 import Data.HashMap as HM
 import Data.Hashable (class Hashable)
 import Data.Maybe (Maybe)
@@ -42,23 +44,23 @@ createInMemoryPersonRepo = inMemoryPersonRepo <$> Ref.new HM.empty
     create {name} = do
       id <- random
       let p = { name, id: PersonId(toString id) }
-      Ref.modify_ (\db -> HM.insert p.id p db) store
+      Ref.modify_ (HM.insert p.id p) store
       pure p
 
     get :: PersonId -> Effect (Maybe (Person PersonId))
-    get id = (\db -> HM.lookup id db) <$> Ref.read store
+    get id = (HM.lookup id) <$> Ref.read store
 
     getByName :: Name -> Effect (Array (Person PersonId))
     getByName n = do
-      db <- Ref.read store
-      let ps = HM.values db
-      pure (filter (\{name} -> n == name) ps)
+      values <- HM.values <$> Ref.read store
+      pure (filter (\{name} -> n == name) values)
 
     update :: PersonId -> (forall a. Person a -> Person a) -> Effect (Maybe (Person PersonId))
     update id f = do
       person <- get id
-      Ref.modify_ (\db -> HM.update (\_ -> f <$> person) id db) store
-      pure person
+      let updatedPerson = f <$> person
+      Ref.modify_ (HM.update (const updatedPerson) id) store
+      pure updatedPerson
 
 main :: Effect Unit
 main = do
