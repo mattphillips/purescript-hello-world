@@ -9,7 +9,7 @@ import Data.Number.Format (toString)
 import Effect (Effect)
 import Effect.Console (logShow)
 import Effect.Random (random)
-import Effect.Ref (Ref, modify_, new, read)
+import Effect.Ref as Ref
 import Prelude (class Eq, class Show, Unit, bind, discard, pure, unit, (<$>))
 
 newtype Name = Name String 
@@ -30,10 +30,10 @@ type PersonRepo m =
   , update :: PersonId -> (forall a. Person a -> Person a) -> m (Maybe (Person PersonId))
   }
 
-type Store = Ref (HM.HashMap PersonId (Person PersonId))
+type Store = Ref.Ref (HM.HashMap PersonId (Person PersonId))
 
 createInMemoryPersonRepo :: Effect (PersonRepo Effect)
-createInMemoryPersonRepo = inMemoryPersonRepo <$> new HM.empty
+createInMemoryPersonRepo = inMemoryPersonRepo <$> Ref.new HM.empty
   where
   inMemoryPersonRepo :: Store -> PersonRepo Effect
   inMemoryPersonRepo store = { create, get, getByName, update }
@@ -42,22 +42,22 @@ createInMemoryPersonRepo = inMemoryPersonRepo <$> new HM.empty
     create {name} = do
       id <- random
       let p = { name, id: PersonId(toString id) }
-      modify_ (\db -> HM.insert p.id p db) store
+      Ref.modify_ (\db -> HM.insert p.id p db) store
       pure p
 
     get :: PersonId -> Effect (Maybe (Person PersonId))
-    get id = (\db -> HM.lookup id db) <$> read store
+    get id = (\db -> HM.lookup id db) <$> Ref.read store
 
     getByName :: Name -> Effect (Array (Person PersonId))
     getByName n = do
-      db <- read store
+      db <- Ref.read store
       let ps = HM.values db
       pure (filter (\{name} -> n == name) ps)
 
     update :: PersonId -> (forall a. Person a -> Person a) -> Effect (Maybe (Person PersonId))
     update id f = do
       person <- get id
-      modify_ (\db -> HM.update (\_ -> f <$> person) id db) store
+      Ref.modify_ (\db -> HM.update (\_ -> f <$> person) id db) store
       pure person
 
 main :: Effect Unit
