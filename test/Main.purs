@@ -4,7 +4,7 @@ import Prelude
 
 import Effect (Effect)
 import Effect.Aff (launchAff_)
-import Person.Repository (createInMemoryPersonRepo)
+import Person.InMemoryInterpreters (createInMemoryPersonRepo)
 import Test.Person.Repository (personRepoTests)
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner (runSpec)

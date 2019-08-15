@@ -1,16 +1,9 @@
-module Person.Repository (PersonRepo, Person, PersonId, Name(..), createInMemoryPersonRepo) where
+module Person.Repository (PersonRepo, Person, PersonId, Name(..)) where
 
-import Data.Eq
-
-import Data.Array (filter)
-import Data.Function (const)
-import Data.HashMap as HM
 import Data.Hashable (class Hashable, hash)
 import Data.Maybe (Maybe)
-import Effect (Effect)
-import Effect.Ref as Ref
-import Id (Id, genId)
-import Prelude (class Eq, class Show, Unit, bind, discard, pure, (<$>))
+import Id (Id)
+import Prelude (class Eq, class Show, Unit)
 
 newtype Name = Name String 
 derive newtype instance showName :: Show Name
@@ -27,33 +20,3 @@ type PersonRepo m =
   , getByName :: Name -> m (Array (Person PersonId))
   , update :: PersonId -> (∀ a. Person a -> Person a) -> m (Maybe (Person PersonId))
   }
-
-type Store = Ref.Ref (HM.HashMap PersonId (Person PersonId))
-
-createInMemoryPersonRepo :: Effect (PersonRepo Effect)
-createInMemoryPersonRepo = inMemoryPersonRepo <$> Ref.new HM.empty
-  where
-  inMemoryPersonRepo :: Store -> PersonRepo Effect
-  inMemoryPersonRepo store = { create, get, getByName, update }
-    where
-    create :: ∀ a. Person a -> Effect (Person PersonId)
-    create {name} = do
-      id <- genId
-      let p = { name, id }
-      Ref.modify_ (HM.insert p.id p) store
-      pure p
-
-    get :: PersonId -> Effect (Maybe (Person PersonId))
-    get id = (HM.lookup id) <$> Ref.read store
-
-    getByName :: Name -> Effect (Array (Person PersonId))
-    getByName n = do
-      values <- HM.values <$> Ref.read store
-      pure (filter (\{name} -> n == name) values)
-
-    update :: PersonId -> (∀ a. Person a -> Person a) -> Effect (Maybe (Person PersonId))
-    update id f = do
-      person <- get id
-      let updatedPerson = f <$> person
-      Ref.modify_ (HM.update (const updatedPerson) id) store
-      pure updatedPerson

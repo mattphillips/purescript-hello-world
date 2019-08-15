@@ -2,9 +2,9 @@ module Main (main) where
 
 import Effect (Effect)
 import Effect.Console (logShow)
+import Person.Repository (Name(..))
 import Prelude (Unit, bind, discard, unit)
-
-import Person.Repository (Name(..), createInMemoryPersonRepo)
+import Person.InMemoryInterpreters (createInMemoryPersonRepo)
 
 main :: Effect Unit
 main = do
