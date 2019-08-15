@@ -10,7 +10,7 @@ import Data.Maybe (Maybe)
 import Effect (Effect)
 import Effect.Ref as Ref
 import Id (Id, genId)
-import Prelude (class Eq, class Show, Void, bind, discard, pure, (<$>))
+import Prelude (class Eq, class Show, Unit, bind, discard, pure, (<$>))
 
 newtype Name = Name String 
 derive newtype instance showName :: Show Name
@@ -20,7 +20,7 @@ instance hasableName :: Hashable Name where
 
 type Person a = { name :: Name, id :: a }
 
-type PersonId = Id (Person Void)
+type PersonId = Id (Person Unit)
 type PersonRepo m =
   { create :: ∀ a. Person a -> m (Person PersonId)
   , get :: PersonId -> m (Maybe (Person PersonId))
