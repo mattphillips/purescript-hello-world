@@ -50,3 +50,17 @@ personRepoTests getRepo =
         people <- liftEffect $ repo.getByName (Name("matt"))
         people `shouldContain` p1
         people `shouldContain` p2
+
+    describe "update" do
+      it "returns nothing when given id does not exist" do
+        repo <- liftEffect getRepo
+        id <- liftEffect genId
+        person <- liftEffect $ repo.update id \pp -> { id: pp.id, name: Name("Matt") }
+        person `shouldEqual` Nothing
+      
+      it "returns updated person when given id exists" do
+        repo <- liftEffect getRepo
+        p <- liftEffect (repo.create { name: Name("matt"), id: unit})
+        _ <- liftEffect $ repo.update p.id \pp -> { id: pp.id, name: Name("Matt") }
+        person <- liftEffect (repo.get p.id)
+        person `shouldEqual` Just({ name: Name("Matt"), id: p.id })
