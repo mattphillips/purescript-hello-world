@@ -5,12 +5,10 @@ import Data.Eq
 import Data.Array (filter)
 import Data.Function (const)
 import Data.HashMap as HM
-import Data.Hashable (class Hashable)
+import Data.Hashable (class Hashable, hash)
 import Data.Maybe (Maybe)
-import Data.Number.Format (toString)
+import Data.UUID (UUID, genUUID, toString)
 import Effect (Effect)
-
-import Effect.Random (random)
 import Effect.Ref as Ref
 import Prelude (class Eq, class Show, bind, discard, pure, (<$>))
 
@@ -18,10 +16,11 @@ newtype Name = Name String
 derive newtype instance showName :: Show Name
 derive newtype instance eqName :: Eq Name
 
-newtype PersonId = PersonId String
+newtype PersonId = PersonId UUID
 derive newtype instance showPersonId :: Show PersonId
 derive newtype instance eqPersonId :: Eq PersonId
-derive newtype instance hashablePersonId :: Hashable PersonId
+instance hasablePersonId :: Hashable PersonId where
+  hash (PersonId uuid) = hash (toString uuid)
 
 type Person a = { name :: Name, id :: a }
 
@@ -42,8 +41,8 @@ createInMemoryPersonRepo = inMemoryPersonRepo <$> Ref.new HM.empty
     where
     create :: forall a. Person a -> Effect (Person PersonId)
     create {name} = do
-      id <- random
-      let p = { name, id: PersonId(toString id) }
+      id <- genUUID
+      let p = { name, id: PersonId(id) }
       Ref.modify_ (HM.insert p.id p) store
       pure p
 
