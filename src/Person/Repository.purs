@@ -22,10 +22,10 @@ type Person a = { name :: Name, id :: a }
 
 type PersonId = Id (Person Void)
 type PersonRepo m =
-  { create :: forall a. Person a -> m (Person PersonId)
+  { create :: ∀ a. Person a -> m (Person PersonId)
   , get :: PersonId -> m (Maybe (Person PersonId))
   , getByName :: Name -> m (Array (Person PersonId))
-  , update :: PersonId -> (forall a. Person a -> Person a) -> m (Maybe (Person PersonId))
+  , update :: PersonId -> (∀ a. Person a -> Person a) -> m (Maybe (Person PersonId))
   }
 
 type Store = Ref.Ref (HM.HashMap PersonId (Person PersonId))
@@ -36,7 +36,7 @@ createInMemoryPersonRepo = inMemoryPersonRepo <$> Ref.new HM.empty
   inMemoryPersonRepo :: Store -> PersonRepo Effect
   inMemoryPersonRepo store = { create, get, getByName, update }
     where
-    create :: forall a. Person a -> Effect (Person PersonId)
+    create :: ∀ a. Person a -> Effect (Person PersonId)
     create {name} = do
       id <- genId
       let p = { name, id }
@@ -51,7 +51,7 @@ createInMemoryPersonRepo = inMemoryPersonRepo <$> Ref.new HM.empty
       values <- HM.values <$> Ref.read store
       pure (filter (\{name} -> n == name) values)
 
-    update :: PersonId -> (forall a. Person a -> Person a) -> Effect (Maybe (Person PersonId))
+    update :: PersonId -> (∀ a. Person a -> Person a) -> Effect (Maybe (Person PersonId))
     update id f = do
       person <- get id
       let updatedPerson = f <$> person
