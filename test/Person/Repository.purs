@@ -9,7 +9,7 @@ import Effect.Class (liftEffect)
 import Id (genId, toString)
 import Person.Repository (Name(..), PersonRepo)
 import Test.Spec (Spec, describe, it)
-import Test.Spec.Assertions (shouldEqual, shouldSatisfy)
+import Test.Spec.Assertions (shouldContain, shouldEqual, shouldSatisfy)
 
 -- TODO: this shouldn't hard coded to Effect as the m to PersonRepo
 -- TODO: should this take an effect of a personRepo? can't it just be given the repo?
@@ -35,3 +35,18 @@ personRepoTests getRepo =
         p <- liftEffect (repo.create { name: Name("matt"), id: unit})
         person <- liftEffect (repo.get p.id)
         person `shouldEqual` Just({ name: Name("matt"), id: p.id })
+
+    describe "getByName" do
+      it "returns empty array when given name does not exist" do
+        repo <- liftEffect getRepo
+        people <- liftEffect $ repo.getByName (Name("matt"))
+        people `shouldEqual` []
+      
+      it "returns all people with given name" do
+        repo <- liftEffect getRepo
+        p1 <- liftEffect (repo.create { name: Name("matt"), id: unit})
+        _ <- liftEffect (repo.create { name: Name("tom"), id: unit})
+        p2 <- liftEffect (repo.create { name: Name("matt"), id: unit})
+        people <- liftEffect $ repo.getByName (Name("matt"))
+        people `shouldContain` p1
+        people `shouldContain` p2
