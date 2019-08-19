@@ -81,5 +81,15 @@ todoRepoTests getRepo =
         todo <- liftEffect (repo.get p.id)
         todo `shouldEqual` Just({ description: Description("Say hello"), id: p.id, status: Completed  })
 
+    describe "delete" do
+      it "removes todo from store" do
+        repo <- liftEffect getRepo
+        t <- liftEffect (repo.create  (Description("say hi")))
+        todo <- liftEffect (repo.get t.id)
+        todo `shouldEqual` Just(t)
+        _ <- liftEffect (repo.delete t.id)
+        deletedTodo <- liftEffect (repo.get t.id)
+        deletedTodo `shouldEqual` Nothing
+
 setCompleted :: ∀ a. Todo a -> Todo a
 setCompleted t = { id: t.id, description: t.description, status: Completed }

@@ -34,4 +34,5 @@ type TodoRepo m =
   , get :: TodoId -> m (Maybe (Todo TodoId))
   , getByStatus :: Status -> m (Array (Todo TodoId))
   , update :: TodoId -> (∀ a. Todo a -> Todo a) -> m (Maybe (Todo TodoId))
+  , delete :: TodoId -> m Unit -- TODO: should this be TodoId -> Maybe (Todo TodoId)?
   }
