@@ -8,9 +8,9 @@
   },
   "scripts": {
     "build": "pulp build",
-    "dev": "pulp run",
+    "dev": "pulp --watch run",
     "repl": "pulp repl",
-    "test": "pulp test"
+    "test": "pulp --watch test"
   },
   "repository": {
     "type": "git",
