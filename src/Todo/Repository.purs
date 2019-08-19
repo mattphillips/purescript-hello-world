@@ -32,6 +32,7 @@ type TodoId = Id (Todo Unit)
 type TodoRepo m =
   { create :: Description -> m (Todo TodoId)
   , get :: TodoId -> m (Maybe (Todo TodoId))
+  , getAll :: m (Array (Todo TodoId))
   , getByStatus :: Status -> m (Array (Todo TodoId))
   , update :: TodoId -> (∀ a. Todo a -> Todo a) -> m (Maybe (Todo TodoId))
   , delete :: TodoId -> m Unit -- TODO: should this be TodoId -> Maybe (Todo TodoId)?

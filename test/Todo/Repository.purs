@@ -37,6 +37,22 @@ todoRepoTests getRepo =
         todo <- liftEffect (repo.get t.id)
         todo `shouldEqual` Just(t)
 
+    describe "getAll" do
+      it "returns empty array when no todos exist" do
+        repo <- liftEffect getRepo
+        todos <- liftEffect repo.getAll
+        todos `shouldEqual` []
+
+      it "returns all todos in array" do
+        repo <- liftEffect getRepo
+        t1 <- liftEffect (repo.create (Description("one")))
+        t2 <- liftEffect (repo.create (Description("two")))
+        t3 <- liftEffect (repo.create (Description("three")))
+        todos <- liftEffect repo.getAll
+        todos `shouldContain` t1
+        todos `shouldContain` t2
+        todos `shouldContain` t3
+
     describe "getByStatus" do
       it "returns empty array when no todos match given status" do
         repo <- liftEffect getRepo

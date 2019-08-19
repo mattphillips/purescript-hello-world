@@ -16,7 +16,7 @@ createInMemoryTodoRepo :: Effect (TodoRepo Effect)
 createInMemoryTodoRepo = inMemoryTodoRepo <$> Ref.new HM.empty
   where
   inMemoryTodoRepo :: Store -> TodoRepo Effect
-  inMemoryTodoRepo store = { create, delete, get, getByStatus, update }
+  inMemoryTodoRepo store = { create, delete, get, getAll, getByStatus, update }
     where
     create :: Description -> Effect (Todo TodoId)
     create description = do
@@ -27,6 +27,9 @@ createInMemoryTodoRepo = inMemoryTodoRepo <$> Ref.new HM.empty
 
     get :: TodoId -> Effect (Maybe (Todo TodoId))
     get id = (HM.lookup id) <$> Ref.read store
+
+    getAll :: Effect (Array (Todo TodoId))
+    getAll = HM.values <$> Ref.read store
 
     getByStatus :: Status -> Effect (Array (Todo TodoId))
     getByStatus s = do
