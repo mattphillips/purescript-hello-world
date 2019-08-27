@@ -23,5 +23,10 @@
     "purescript-psci-support": "^4.0.0",
     "purescript-spec": "^4.0.0",
     "purescript-strings": "^4.0.1"
+  },
+  "resolutions": {
+    "purescript-record": "^2.0.1",
+    "purescript-typelevel-prelude": ">= 4.0.0 < 6.0.0",
+    "purescript-foreign-object": "^2.0.0"
   }
 }
