@@ -3,6 +3,7 @@ module Main (main) where
 import Effect (Effect)
 import Effect.Class.Console (log)
 import Effect.Exception (message)
+import Morgan.RequestLogger (requestLogger)
 import Node.Express.App (App, delete, get, listenHttp, post, put, useExternal, useOnError)
 import Node.Express.Request.BodyParser (bodyParser)
 import Node.Express.Response (send)
@@ -14,6 +15,7 @@ import Todo.Routes (TodoRoutes, createTodoRoutes)
 
 appSetup :: TodoRoutes -> App
 appSetup routes = do
+  useExternal requestLogger
   useExternal bodyParser
   get "/" routes.getAll
   post "/" routes.create
