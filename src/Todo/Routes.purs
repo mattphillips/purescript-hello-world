@@ -18,10 +18,11 @@ type TodoRoutes =
   { getAll :: Handler
   , create :: Handler
   , delete :: Handler
+  , update :: Handler
   }
 
 createTodoRoutes :: TodoRepo Effect -> TodoRoutes
-createTodoRoutes repo = { getAll, create, delete }
+createTodoRoutes repo = { getAll, create, delete, update }
   where
   getAll :: Handler
   getAll = do
@@ -45,6 +46,27 @@ createTodoRoutes repo = { getAll, create, delete }
       Just id -> do
         _ <- liftEffect (repo.delete id)
         sendStatus 204
+
+  update :: Handler
+  update = do
+    idParam <- getIdParam
+    case idParam of
+      Nothing -> sendStatus 404
+      Just id -> do
+        description <- runExcept <$> getBody
+        either handleError handleSuccess description
+        where
+          handleError errs = setStatus 400 >>= const (send errs) -- TODO add a json serialiser here
+          handleSuccess d = do
+            isComplete <- runExcept <$> getBody
+            either handleError' handleSuccess' isComplete
+            where
+              handleError' errs = setStatus 400 >>= const (send errs) -- TODO add a json serialiser here
+              handleSuccess' ic = do
+                todo <- liftEffect $ repo.update id (\todo -> { id: todo.id, isComplete: ic, description: d })
+                case todo of
+                  Nothing -> sendStatus 404
+                  Just t -> sendJson t
 
 getIsCompleteParam :: HandlerM (Maybe Boolean)
 getIsCompleteParam = do

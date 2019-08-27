@@ -2,7 +2,7 @@ module Main (main) where
 
 import Effect (Effect)
 import Effect.Class.Console (log)
-import Node.Express.App (App, delete, get, listenHttp, post, useExternal)
+import Node.Express.App (App, delete, get, listenHttp, post, put, useExternal)
 import Node.Express.Request.BodyParser (bodyParser)
 import Node.HTTP (Server)
 import Prelude (bind, discard, show, ($), (<>))
@@ -15,6 +15,7 @@ appSetup routes = do
   useExternal bodyParser
   get "/" routes.getAll
   post "/" routes.create
+  put "/:id" routes.update
   delete "/:id" routes.delete
   -- useOnError        (errorHandler      state)
 
