@@ -7,7 +7,7 @@ import Effect (Effect)
 import Effect.Ref as Ref
 import Id (genId)
 import Prelude (Unit, bind, discard, pure, (<$>), (==))
-import Todo.Repository (Description, Todo, TodoId, TodoRepo, Filter)
+import Todo.Repository (Description, Filter, IsComplete(..), Todo, TodoId, TodoRepo)
 
 type Store = Ref.Ref (HM.HashMap TodoId (Todo TodoId))
 
@@ -20,7 +20,7 @@ createInMemoryTodoRepo = inMemoryTodoRepo <$> Ref.new HM.empty
     create :: Description -> Effect (Todo TodoId)
     create description = do
       id <- genId
-      let p = { description, id, isComplete: false }
+      let p = { description, id, isComplete: (IsComplete false) }
       Ref.modify_ (HM.insert p.id p) store
       pure p
 

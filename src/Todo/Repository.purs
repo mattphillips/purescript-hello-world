@@ -1,8 +1,8 @@
-module Todo.Repository (TodoRepo, Todo, TodoId, Description(..), Filter) where
+module Todo.Repository (TodoRepo, Todo, TodoId, Description(..), IsComplete(..), Filter) where
 
 import Data.Hashable (class Hashable, hash)
 import Data.Maybe (Maybe, maybe)
-import Foreign (ForeignError(..), fail, readString)
+import Foreign (ForeignError(..), fail, readBoolean, readString)
 import Foreign.Class (class Decode)
 import Foreign.Internal (readObject)
 import Foreign.Object (lookup)
@@ -22,15 +22,29 @@ instance decodeDescription :: Decode Description where
 instance hashableDescription :: Hashable Description where
   hash (Description n) = hash n
 
+newtype IsComplete = IsComplete Boolean
+
+derive newtype instance eqIsComplete :: Eq IsComplete
+derive newtype instance showIsComplete :: Show IsComplete
+instance hashableIsComplete :: Hashable IsComplete where
+  hash (IsComplete b) = hash b
+
+instance decodeIsComplete :: Decode IsComplete where
+  decode f = readObject f >>= lookup "isComplete" >>> maybe failure success
+    where
+      failure = fail $ ForeignError "Property isComplete is missing"
+      success d = IsComplete <$> readBoolean d
+
+
 type Todo a =
   { id :: a
   , description :: Description
-  , isComplete :: Boolean
+  , isComplete :: IsComplete
   }
 
 type TodoId = Id (Todo Unit)
 
-type Filter = { isComplete :: Boolean }
+type Filter = { isComplete :: IsComplete }
 
 type TodoRepo m =
   { create :: Description -> m (Todo TodoId)

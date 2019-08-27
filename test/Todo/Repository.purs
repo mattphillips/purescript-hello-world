@@ -9,7 +9,7 @@ import Effect.Class (liftEffect)
 import Id (genId, toString)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldContain, shouldEqual, shouldNotContain, shouldSatisfy)
-import Todo.Repository (Description(..), Todo, TodoRepo)
+import Todo.Repository (Description(..), IsComplete(..), Todo, TodoRepo)
 
 -- TODO: this shouldn't hard coded to Effect as the m to TodoRepo
 -- TODO: should this take an effect of a todoRepo? can't it just be given the repo?
@@ -21,7 +21,7 @@ todoRepoTests getRepo =
         repo <- liftEffect getRepo
         t <- liftEffect (repo.create  (Description("say hi")))
         t.description `shouldEqual` Description("say hi")
-        t.isComplete `shouldEqual` false
+        t.isComplete `shouldEqual` (IsComplete false)
         toString t.id `shouldSatisfy` (length >>> (_ > 0))
 
     describe "get" do
@@ -59,7 +59,7 @@ todoRepoTests getRepo =
         t1 <- liftEffect (repo.create (Description("one")))
         t2 <- liftEffect (repo.create (Description("two")))
         t3 <- liftEffect (repo.create (Description("three")))
-        activeTodos <- liftEffect $ repo.filter {isComplete: false}
+        activeTodos <- liftEffect $ repo.filter {isComplete: (IsComplete false)}
         activeTodos `shouldContain` t1
         activeTodos `shouldContain` t2
         activeTodos `shouldContain` t3
@@ -71,10 +71,10 @@ todoRepoTests getRepo =
         t3 <- liftEffect (repo.create (Description("three")))
         _ <- liftEffect $ repo.update t1.id setCompleted
         _ <- liftEffect $ repo.update t3.id setCompleted
-        completedTodos <- liftEffect $ repo.filter {isComplete: true}
-        completedTodos `shouldContain` {id: t1.id, description: t1.description, isComplete: true}
+        completedTodos <- liftEffect $ repo.filter {isComplete: (IsComplete true)}
+        completedTodos `shouldContain` {id: t1.id, description: t1.description, isComplete: (IsComplete true)}
         completedTodos `shouldNotContain` t2
-        completedTodos `shouldContain` {id: t3.id, description: t3.description, isComplete: true}
+        completedTodos `shouldContain` {id: t3.id, description: t3.description, isComplete: (IsComplete true)}
 
     describe "update" do
       it "returns nothing when given id does not exist" do
@@ -86,9 +86,9 @@ todoRepoTests getRepo =
       it "returns updated todo when given id exists" do
         repo <- liftEffect getRepo
         p <- liftEffect (repo.create (Description("say hi")))
-        _ <- liftEffect $ repo.update p.id \pp -> {id: pp.id, description: Description("Say hello"), isComplete: true}
+        _ <- liftEffect $ repo.update p.id \pp -> {id: pp.id, description: Description("Say hello"), isComplete: (IsComplete true)}
         todo <- liftEffect (repo.get p.id)
-        todo `shouldEqual` Just({description: Description("Say hello"), id: p.id, isComplete: true})
+        todo `shouldEqual` Just({description: Description("Say hello"), id: p.id, isComplete: (IsComplete true)})
 
     describe "delete" do
       it "removes todo from store" do
@@ -101,4 +101,4 @@ todoRepoTests getRepo =
         deletedTodo `shouldEqual` Nothing
 
 setCompleted :: ∀ a. Todo a -> Todo a
-setCompleted t = {id: t.id, description: t.description, isComplete: true}
+setCompleted t = {id: t.id, description: t.description, isComplete: (IsComplete true)}

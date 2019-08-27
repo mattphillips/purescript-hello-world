@@ -7,7 +7,7 @@ import Node.Express.Request.BodyParser (bodyParser)
 import Node.HTTP (Server)
 import Prelude (bind, discard, show, ($), (<>))
 import Todo.InMemoryInterpreters (createInMemoryTodoRepo)
-import Todo.Repository (Description(..))
+import Todo.Repository (Description(..), IsComplete(..))
 import Todo.Routes (TodoRoutes, createTodoRoutes)
 
 appSetup :: TodoRoutes  -> App
@@ -23,7 +23,7 @@ main = do
   repo <- createInMemoryTodoRepo
   t <- repo.create (Description("One"))
   _ <- repo.create (Description("two"))
-  _ <- repo.update t.id \pp -> { id: pp.id, description: pp.description, isComplete: true }
+  _ <- repo.update t.id \pp -> { id: pp.id, description: pp.description, isComplete: (IsComplete true) }
   _ <- repo.create (Description("three"))
   let routes = createTodoRoutes repo
   -- port <- (parseInt <<< fromMaybe "8080") <$> lookupEnv "PORT"

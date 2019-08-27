@@ -12,7 +12,7 @@ import Node.Express.Handler (Handler, HandlerM)
 import Node.Express.Request (getBody, getQueryParam, getRouteParam)
 import Node.Express.Response (send, sendJson, setStatus)
 import Node.Express.Response.SendStatus (sendStatus)
-import Todo.Repository (TodoId, TodoRepo)
+import Todo.Repository (IsComplete(..), TodoId, TodoRepo)
 
 type TodoRoutes =
   { getAll :: Handler
@@ -28,7 +28,7 @@ createTodoRoutes repo = { getAll, create, delete }
     isCompleteParam <- getIsCompleteParam
     todos <- liftEffect case isCompleteParam of
       Nothing -> repo.getAll
-      Just isComplete -> (repo.filter {isComplete})
+      Just isComplete -> (repo.filter {isComplete: (IsComplete isComplete)})
     sendJson $ todos
   
   create :: Handler
