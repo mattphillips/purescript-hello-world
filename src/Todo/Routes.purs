@@ -2,23 +2,26 @@ module Todo.Routes (createTodoRoutes, TodoRoutes) where
 
 import Prelude
 
+import Control.Monad.Except (runExcept)
+import Data.Either (either)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Id (parseId)
 import Node.Express.Handler (Handler, HandlerM)
-import Node.Express.Request (getQueryParam, getRouteParam)
-import Node.Express.Response (sendJson)
+import Node.Express.Request (getBody, getQueryParam, getRouteParam)
+import Node.Express.Response (send, sendJson, setStatus)
 import Node.Express.Response.SendStatus (sendStatus)
-import Todo.Repository (TodoRepo, TodoId)
+import Todo.Repository (TodoId, TodoRepo)
 
 type TodoRoutes =
   { getAll :: Handler
+  , create :: Handler
   , delete :: Handler
   }
 
 createTodoRoutes :: TodoRepo Effect -> TodoRoutes
-createTodoRoutes repo = { getAll, delete }
+createTodoRoutes repo = { getAll, create, delete }
   where
   getAll :: Handler
   getAll = do
@@ -27,6 +30,12 @@ createTodoRoutes repo = { getAll, delete }
       Nothing -> repo.getAll
       Just isComplete -> (repo.filter {isComplete})
     sendJson $ todos
+  
+  create :: Handler
+  create = getBody >>= runExcept >>> either handleError handleSuccess
+    where
+      handleError errs = setStatus 400 >>= const (send errs) -- TODO add a json serialiser here
+      handleSuccess d = (liftEffect $ repo.create d) >>= sendJson
 
   delete :: Handler
   delete = do

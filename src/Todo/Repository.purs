@@ -1,13 +1,24 @@
 module Todo.Repository (TodoRepo, Todo, TodoId, Description(..), Filter) where
 
 import Data.Hashable (class Hashable, hash)
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe, maybe)
+import Foreign (ForeignError(..), fail, readString)
+import Foreign.Class (class Decode)
+import Foreign.Internal (readObject)
+import Foreign.Object (lookup)
 import Id (Id)
-import Prelude (class Eq, class Show, Unit)
+import Prelude (class Eq, class Show, Unit, ($), (<$>), (>>=), (>>>))
 
 newtype Description = Description String 
 derive newtype instance showDescription :: Show Description
 derive newtype instance eqDescription :: Eq Description
+
+instance decodeDescription :: Decode Description where
+  decode f = readObject f >>= lookup "description" >>> maybe failure success
+    where
+      failure = fail $ ForeignError "Property description is missing"
+      success d = Description <$> readString d
+
 instance hashableDescription :: Hashable Description where
   hash (Description n) = hash n
 
