@@ -43,26 +43,13 @@ createTodoRoutes repo = { getAll, create, delete, update }
   create = getPayload \des -> (liftEffect $ repo.create des) >>= sendJson
 
   delete :: Handler
-  delete = getIdParam' \id -> (liftEffect $ repo.delete id) >>= const (sendStatus 204)
+  delete = getIdParam \id -> (liftEffect $ repo.delete id) >>= const (sendStatus 204)
 
   update :: Handler
-  update = do
-    idParam <- getIdParam
-    case idParam of
-      Nothing -> raiseError InvalidTodoId
-      Just id -> do
-        description <- runExcept <$> getBody
-        either handleInvalidArgumentError handleSuccess description
-        where
-          handleSuccess d = do
-            isComplete <- runExcept <$> getBody
-            either handleInvalidArgumentError handleSuccess' isComplete
-            where
-              handleSuccess' ic = do
-                todo <- liftEffect $ repo.update id (\todo -> { id: todo.id, isComplete: ic, description: d })
-                case todo of
-                  Nothing -> raiseError (TodoNotFound id)
-                  Just t -> sendJson t
+  update = getIdParam \id ->
+    getPayload \description ->
+      getPayload \isComplete ->
+        (liftEffect $ repo.update id (\todo -> { id: todo.id, isComplete, description })) >>= maybe (raiseError (TodoNotFound id)) sendJson
 
 getPayload :: ∀ a. Decode a => (a -> Handler) -> Handler
 getPayload f = getBody >>= runExcept >>> either handleInvalidArgumentError f
@@ -86,8 +73,5 @@ getIsCompleteParam = do
     (Just "false") ->  (Just (false))
     _ ->  Nothing
 
-getIdParam :: HandlerM (Maybe TodoId)
-getIdParam = (_ >>= parseId) <$> getRouteParam "id"
-
-getIdParam' :: (TodoId -> Handler) -> Handler
-getIdParam' f = getRouteParam "id" >>= (_ >>= parseId) >>> maybe (raiseError InvalidTodoId) f
+getIdParam :: (TodoId -> Handler) -> Handler
+getIdParam f = getRouteParam "id" >>= (_ >>= parseId) >>> maybe (raiseError InvalidTodoId) f
