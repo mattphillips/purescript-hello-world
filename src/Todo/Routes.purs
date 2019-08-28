@@ -11,6 +11,7 @@ import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Exception (error)
 import Foreign (ForeignError)
+import Foreign.Class (class Decode)
 import Id (parseId, toString)
 import Node.Express.Handler (Handler, HandlerM, nextThrow)
 import Node.Express.Request (getBody, getQueryParam, getRouteParam)
@@ -39,7 +40,7 @@ createTodoRoutes repo = { getAll, create, delete, update }
     sendJson $ todos
   
   create :: Handler
-  create = getBody >>= runExcept >>> either handleInvalidArgumentError \d -> (liftEffect $ repo.create d) >>= sendJson
+  create = getPayload \des -> (liftEffect $ repo.create des) >>= sendJson
 
   delete :: Handler
   delete = getIdParam' \id -> (liftEffect $ repo.delete id) >>= const (sendStatus 204)
@@ -62,6 +63,9 @@ createTodoRoutes repo = { getAll, create, delete, update }
                 case todo of
                   Nothing -> raiseError (TodoNotFound id)
                   Just t -> sendJson t
+
+getPayload :: ∀ a. Decode a => (a -> Handler) -> Handler
+getPayload f = getBody >>= runExcept >>> either handleInvalidArgumentError f
 
 raiseError :: TodoError -> Handler
 raiseError = case _ of
