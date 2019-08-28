@@ -2,22 +2,24 @@ module Main (main) where
 
 import Effect (Effect)
 import Effect.Class.Console (log)
-import Node.Express.App (App, delete, get, listenHttp, post, put, useExternal)
+import Effect.Exception (message)
+import Node.Express.App (App, delete, get, listenHttp, post, put, useExternal, useOnError)
 import Node.Express.Request.BodyParser (bodyParser)
+import Node.Express.Response (send)
 import Node.HTTP (Server)
 import Prelude (bind, discard, show, ($), (<>))
 import Todo.InMemoryInterpreters (createInMemoryTodoRepo)
 import Todo.Repository (Description(..), IsComplete(..))
 import Todo.Routes (TodoRoutes, createTodoRoutes)
 
-appSetup :: TodoRoutes  -> App
+appSetup :: TodoRoutes -> App
 appSetup routes = do
   useExternal bodyParser
   get "/" routes.getAll
   post "/" routes.create
   put "/:id" routes.update
   delete "/:id" routes.delete
-  -- useOnError        (errorHandler      state)
+  useOnError \e -> send { error: message e }
 
 main :: Effect Server
 main = do
