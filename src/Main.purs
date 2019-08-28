@@ -1,5 +1,6 @@
 module Main (main) where
 
+import Config (createConfig)
 import Effect (Effect)
 import Effect.Class.Console (log)
 import Effect.Exception (message)
@@ -25,12 +26,12 @@ appSetup routes = do
 
 main :: Effect Server
 main = do
+  config <- createConfig
   repo <- createInMemoryTodoRepo
   t <- repo.create (Description("One"))
   _ <- repo.create (Description("two"))
   _ <- repo.update t.id \pp -> pp { isComplete = (IsComplete true) }
   _ <- repo.create (Description("three"))
   let routes = createTodoRoutes repo
-  -- port <- (parseInt <<< fromMaybe "8080") <$> lookupEnv "PORT"
-  listenHttp (appSetup routes) 8080 \_ ->
-    log $ "Listening on " <> show 8080
+  listenHttp (appSetup routes) config.port \_ ->
+    log $ "Listening on " <> show config.port
