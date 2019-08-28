@@ -80,13 +80,13 @@ todoRepoTests getRepo =
       it "returns nothing when given id does not exist" do
         repo <- liftEffect getRepo
         id <- liftEffect genId
-        todo <- liftEffect $ repo.update id \pp -> {id: pp.id, description: Description("Say hello"), isComplete: pp.isComplete}
+        todo <- liftEffect $ repo.update id \pp -> pp { description = Description("Say hello") }
         todo `shouldEqual` Nothing
       
       it "returns updated todo when given id exists" do
         repo <- liftEffect getRepo
         p <- liftEffect (repo.create (Description("say hi")))
-        _ <- liftEffect $ repo.update p.id \pp -> {id: pp.id, description: Description("Say hello"), isComplete: (IsComplete true)}
+        _ <- liftEffect $ repo.update p.id \pp -> pp { description = Description("Say hello"), isComplete = (IsComplete true)}
         todo <- liftEffect (repo.get p.id)
         todo `shouldEqual` Just({description: Description("Say hello"), id: p.id, isComplete: (IsComplete true)})
 
@@ -101,4 +101,4 @@ todoRepoTests getRepo =
         deletedTodo `shouldEqual` Nothing
 
 setCompleted :: ∀ a. Todo a -> Todo a
-setCompleted t = {id: t.id, description: t.description, isComplete: (IsComplete true)}
+setCompleted t = t { isComplete = (IsComplete true) }

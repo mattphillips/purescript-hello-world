@@ -47,9 +47,9 @@ createTodoRoutes repo = { getAll, create, delete, update }
 
   update :: Handler
   update = getIdParam \id ->
-    getPayload \description ->
-      getPayload \isComplete ->
-        (liftEffect $ repo.update id (\todo -> { id: todo.id, isComplete, description })) >>=
+    getPayload \d ->
+      getPayload \isC ->
+        (liftEffect $ repo.update id (\todo -> todo { isComplete = isC, description = d })) >>=
           maybe (raiseError (TodoNotFound id)) sendJson
 
 getPayload :: ∀ a. Decode a => (a -> Handler) -> Handler

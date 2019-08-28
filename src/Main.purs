@@ -28,7 +28,7 @@ main = do
   repo <- createInMemoryTodoRepo
   t <- repo.create (Description("One"))
   _ <- repo.create (Description("two"))
-  _ <- repo.update t.id \pp -> { id: pp.id, description: pp.description, isComplete: (IsComplete true) }
+  _ <- repo.update t.id \pp -> pp { isComplete = (IsComplete true) }
   _ <- repo.create (Description("three"))
   let routes = createTodoRoutes repo
   -- port <- (parseInt <<< fromMaybe "8080") <$> lookupEnv "PORT"
