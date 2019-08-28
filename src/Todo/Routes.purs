@@ -49,10 +49,11 @@ createTodoRoutes repo = { getAll, create, delete, update }
   update = getIdParam \id ->
     getPayload \description ->
       getPayload \isComplete ->
-        (liftEffect $ repo.update id (\todo -> { id: todo.id, isComplete, description })) >>= maybe (raiseError (TodoNotFound id)) sendJson
+        (liftEffect $ repo.update id (\todo -> { id: todo.id, isComplete, description })) >>=
+          maybe (raiseError (TodoNotFound id)) sendJson
 
 getPayload :: ∀ a. Decode a => (a -> Handler) -> Handler
-getPayload f = getBody >>= runExcept >>> either handleInvalidArgumentError f
+getPayload f = getBody >>= runExcept >>> either (InvalidArgument >>> raiseError) f
 
 raiseError :: TodoError -> Handler
 raiseError = case _ of
@@ -61,9 +62,6 @@ raiseError = case _ of
   InvalidArgument msg -> nextError 400 ("Invalid Request. " <> show (head msg)) -- TODO: serialise foreign error properly
   where
     nextError status msg = setStatus status >>= const (nextThrow $ error msg)
-
-handleInvalidArgumentError :: NonEmptyList ForeignError -> Handler
-handleInvalidArgumentError = InvalidArgument >>> raiseError
 
 getIsCompleteParam :: HandlerM (Maybe Boolean)
 getIsCompleteParam = do
