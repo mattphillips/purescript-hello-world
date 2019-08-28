@@ -6,7 +6,7 @@ import Control.Monad.Except (runExcept)
 import Data.Either (either)
 import Data.List.NonEmpty (head)
 import Data.List.Types (NonEmptyList)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Exception (error)
@@ -42,13 +42,7 @@ createTodoRoutes repo = { getAll, create, delete, update }
   create = getBody >>= runExcept >>> either handleInvalidArgumentError \d -> (liftEffect $ repo.create d) >>= sendJson
 
   delete :: Handler
-  delete = do
-    idParam <- getIdParam
-    case idParam of
-      Nothing -> raiseError InvalidTodoId
-      Just id -> do
-        _ <- liftEffect (repo.delete id) -- TODO: this can return nothing so should 404
-        sendStatus 204
+  delete = getIdParam' \id -> (liftEffect $ repo.delete id) >>= const (sendStatus 204)
 
   update :: Handler
   update = do
@@ -78,7 +72,7 @@ raiseError = case _ of
     nextError status msg = setStatus status >>= const (nextThrow $ error msg)
 
 handleInvalidArgumentError :: NonEmptyList ForeignError -> Handler
-handleInvalidArgumentError errs = raiseError (InvalidArgument errs)
+handleInvalidArgumentError = InvalidArgument >>> raiseError
 
 getIsCompleteParam :: HandlerM (Maybe Boolean)
 getIsCompleteParam = do
@@ -90,3 +84,6 @@ getIsCompleteParam = do
 
 getIdParam :: HandlerM (Maybe TodoId)
 getIdParam = (_ >>= parseId) <$> getRouteParam "id"
+
+getIdParam' :: (TodoId -> Handler) -> Handler
+getIdParam' f = getRouteParam "id" >>= (_ >>= parseId) >>> maybe (raiseError InvalidTodoId) f
