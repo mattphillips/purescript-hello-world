@@ -1,13 +1,13 @@
 module Todo.InMemoryInterpreters (createInMemoryTodoRepo) where
 
-import Data.Function (const, (<<<))
+import Data.Function (const, (<<<), (>>>))
 import Data.HashMap as HM
 import Data.Maybe (Maybe)
 import Effect (Effect)
 import Effect.Ref as Ref
 import Id (genId)
 import Prelude (Unit, bind, discard, pure, (<$>), (==))
-import Todo.Repository (Description, Filter, IsComplete(..), Todo, TodoId, TodoRepo)
+import Todo.Repository (Description, Filter, IsComplete(..), Todo(..), TodoId, TodoRepo, getIsComplete)
 
 type Store = Ref.Ref (HM.HashMap TodoId (Todo TodoId))
 
@@ -20,9 +20,9 @@ createInMemoryTodoRepo = inMemoryTodoRepo <$> Ref.new HM.empty
     create :: Description -> Effect (Todo TodoId)
     create description = do
       id <- genId
-      let p = { description, id, isComplete: (IsComplete false) }
-      Ref.modify_ (HM.insert p.id p) store
-      pure p
+      let t = Todo { description, id, isComplete: (IsComplete false) }
+      Ref.modify_ (HM.insert id t) store
+      pure t
 
     get :: TodoId -> Effect (Maybe (Todo TodoId))
     get id = (HM.lookup id) <$> Ref.read store
@@ -31,7 +31,7 @@ createInMemoryTodoRepo = inMemoryTodoRepo <$> Ref.new HM.empty
     getAll = HM.values <$> Ref.read store
 
     filter :: Filter -> Effect (Array (Todo TodoId))
-    filter f = (HM.values <<< (HM.filter (\{isComplete} -> isComplete == f.isComplete)) <$> Ref.read store)
+    filter f = (HM.values <<< (HM.filter (getIsComplete >>> (_ == f.isComplete))) <$> Ref.read store)
 
     update :: TodoId -> (∀ a. Todo a -> Todo a) -> Effect (Maybe (Todo TodoId))
     update id f = do

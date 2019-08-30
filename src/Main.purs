@@ -11,7 +11,7 @@ import Node.Express.Response (send)
 import Node.HTTP (Server)
 import Prelude (bind, discard, show, ($), (<>))
 import Todo.InMemoryInterpreters (createInMemoryTodoRepo)
-import Todo.Repository (Description(..), IsComplete(..))
+import Todo.Repository (Description(..), IsComplete(..), getId, updateTodo)
 import Todo.Routes (TodoRoutes, createTodoRoutes)
 
 appSetup :: TodoRoutes -> App
@@ -30,7 +30,7 @@ main = do
   repo <- createInMemoryTodoRepo
   t <- repo.create (Description("One"))
   _ <- repo.create (Description("two"))
-  _ <- repo.update t.id \pp -> pp { isComplete = (IsComplete true) }
+  _ <- repo.update (getId t) (updateTodo \tt -> tt { isComplete = (IsComplete true) })
   _ <- repo.create (Description("three"))
   let routes = createTodoRoutes repo
   listenHttp (appSetup routes) config.port \_ ->

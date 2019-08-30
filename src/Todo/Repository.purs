@@ -1,4 +1,16 @@
-module Todo.Repository (TodoRepo, Todo, TodoId, Description(..), IsComplete(..), Filter) where
+module Todo.Repository (
+  TodoRepo,
+  Todo(..),
+  TodoRecord,
+  TodoId,
+  Description(..),
+  IsComplete(..),
+  Filter,
+  updateTodo,
+  getId,
+  getDescription,
+  getIsComplete
+) where
 
 import Control.Monad.Except (mapExcept)
 import Data.Either (Either(..), either)
@@ -40,11 +52,26 @@ decodeValueAtKey key parse construct f = readObject f >>= lookup key >>> maybe h
       where
       handleParseError = const $ Left $ singleton $ ForeignError $ "Could not parse " <> key <> "."
 
-type Todo a =
-  { id :: a
-  , description :: Description
-  , isComplete :: IsComplete
-  }
+type TodoRecord a = { id :: a , description :: Description , isComplete :: IsComplete }
+-- TODO: maybe don't expose the Todo constructor
+newtype Todo a = Todo (TodoRecord a)
+
+derive newtype instance showTodo :: Show a => Show (Todo a)
+derive newtype instance eqTodo :: Eq a => Eq (Todo a)
+instance hashableTodo :: Hashable a => Hashable (Todo a) where
+  hash (Todo t) = hash t
+
+getId :: ∀ a. Todo a -> a
+getId (Todo t) = t.id
+
+getDescription :: ∀ a. Todo a -> Description
+getDescription (Todo t) = t.description
+
+getIsComplete :: ∀ a. Todo a -> IsComplete
+getIsComplete (Todo t) = t.isComplete
+
+updateTodo :: forall a. (TodoRecord a -> TodoRecord a) -> Todo a -> Todo a
+updateTodo f (Todo t) = Todo (f t)
 
 type TodoId = Id (Todo Unit)
 

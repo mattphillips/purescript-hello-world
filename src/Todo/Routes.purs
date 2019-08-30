@@ -17,7 +17,7 @@ import Node.Express.Handler (Handler, HandlerM, nextThrow)
 import Node.Express.Request (getBody, getQueryParam, getRouteParam)
 import Node.Express.Response (sendJson, setStatus)
 import Node.Express.Response.SendStatus (sendStatus)
-import Todo.Repository (IsComplete(..), TodoId, TodoRepo)
+import Todo.Repository (IsComplete(..), TodoId, TodoRepo, updateTodo)
 
 data TodoError = InvalidTodoId | TodoNotFound TodoId | InvalidArgument (NonEmptyList ForeignError)
 
@@ -49,7 +49,7 @@ createTodoRoutes repo = { getAll, create, delete, update }
   update = getIdParam \id ->
     getPayload \d ->
       getPayload \isC ->
-        (liftEffect $ repo.update id (\todo -> todo { isComplete = isC, description = d })) >>=
+        (liftEffect $ repo.update id (updateTodo \t -> t { isComplete = isC, description = d })) >>=
           maybe (raiseError (TodoNotFound id)) sendJson
 
 getPayload :: ∀ a. Decode a => (a -> Handler) -> Handler
