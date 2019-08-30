@@ -19,7 +19,8 @@
     "purescript-uuid": "^6.0.0",
     "purescript-express": "^0.8.0",
     "purescript-node-process": "^7.0.0",
-    "purescript-integers": "^4.0.0"
+    "purescript-integers": "^4.0.0",
+    "purescript-milkis": "^7.2.1"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0",

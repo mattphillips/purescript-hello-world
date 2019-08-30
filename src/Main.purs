@@ -5,23 +5,20 @@ import Effect (Effect)
 import Effect.Class.Console (log)
 import Effect.Exception (message)
 import Morgan.RequestLogger (requestLogger)
-import Node.Express.App (App, delete, get, listenHttp, post, put, useExternal, useOnError)
+import Node.Express.App (App, listenHttp, useExternal, useOnError)
 import Node.Express.Request.BodyParser (bodyParser)
 import Node.Express.Response (send)
 import Node.HTTP (Server)
 import Prelude (bind, discard, show, ($), (<>))
 import Todo (Description(..), IsComplete(..), getId, updateTodo)
 import Todo.InMemoryInterpreters (createInMemoryTodoRepo)
-import Todo.Routes (TodoRoutes, createTodoRoutes)
+import Todo.Routes (createTodoRoutes)
 
-appSetup :: TodoRoutes -> App
+appSetup :: App -> App
 appSetup routes = do
   useExternal requestLogger
   useExternal bodyParser
-  get "/" routes.getAll
-  post "/" routes.create
-  put "/:id" routes.update
-  delete "/:id" routes.delete
+  routes
   useOnError \e -> send { error: message e }
 
 main :: Effect Server

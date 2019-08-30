@@ -1,4 +1,4 @@
-module Todo.Routes (createTodoRoutes, TodoRoutes, TodoError(..)) where
+module Todo.Routes (createTodoRoutes, TodoError(..)) where
 
 import Prelude
 
@@ -13,6 +13,7 @@ import Effect.Exception (error)
 import Foreign (ForeignError)
 import Foreign.Class (class Decode)
 import Id (parseId, toString)
+import Node.Express.App (App, delete, get, post, put)
 import Node.Express.Handler (Handler, HandlerM, nextThrow)
 import Node.Express.Request (getBody, getQueryParam, getRouteParam)
 import Node.Express.Response (sendJson, setStatus)
@@ -22,17 +23,17 @@ import Todo.Repository (TodoRepo)
 
 data TodoError = InvalidTodoId | TodoNotFound TodoId | InvalidArgument (NonEmptyList ForeignError)
 
-type TodoRoutes =
-  { getAll :: Handler
-  , create :: Handler
-  , delete :: Handler
-  , update :: Handler
-  }
+createTodoRoutes :: TodoRepo Effect -> App
+createTodoRoutes repo = do
+  get "/" getAll
 
-createTodoRoutes :: TodoRepo Effect -> TodoRoutes
-createTodoRoutes repo = { getAll, create, delete, update }
+  post "/" create
+  
+  put "/:id" update
+  
+  delete "/:id" deleteHandler
+
   where
-  getAll :: Handler
   getAll = do
     isCompleteParam <- getIsCompleteParam
     todos <- liftEffect case isCompleteParam of
@@ -40,13 +41,11 @@ createTodoRoutes repo = { getAll, create, delete, update }
       Just isComplete -> (repo.filter {isComplete: (IsComplete isComplete)})
     sendJson $ todos
   
-  create :: Handler
   create = getPayload \des -> (liftEffect $ repo.create des) >>= sendJson
 
-  delete :: Handler
-  delete = getIdParam \id -> (liftEffect $ repo.delete id) >>= const (sendStatus 204)
+  deleteHandler :: Handler
+  deleteHandler = getIdParam \id -> (liftEffect $ repo.delete id) >>= const (sendStatus 204)
 
-  update :: Handler
   update = getIdParam \id ->
     getPayload \d ->
       getPayload \isC ->
