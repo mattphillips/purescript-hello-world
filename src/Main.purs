@@ -10,8 +10,8 @@ import Node.Express.Request.BodyParser (bodyParser)
 import Node.Express.Response (send)
 import Node.HTTP (Server)
 import Prelude (bind, discard, show, ($), (<>))
+import Todo (Description(..), IsComplete(..), getId, updateTodo)
 import Todo.InMemoryInterpreters (createInMemoryTodoRepo)
-import Todo.Repository (Description(..), IsComplete(..), getId, updateTodo)
 import Todo.Routes (TodoRoutes, createTodoRoutes)
 
 appSetup :: TodoRoutes -> App

@@ -9,7 +9,8 @@ import Effect.Class (liftEffect)
 import Id (genId, toString)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldContain, shouldEqual, shouldNotContain, shouldSatisfy)
-import Todo.Repository (Description(..), IsComplete(..), Todo(..), TodoRepo, getId, updateTodo)
+import Todo (Description(..), IsComplete(..), Todo(..), getId, updateTodo)
+import Todo.Repository (TodoRepo)
 
 -- TODO: this shouldn't hard coded to Effect as the m to TodoRepo
 -- TODO: should this take an effect of a todoRepo? can't it just be given the repo?

@@ -7,7 +7,8 @@ import Effect (Effect)
 import Effect.Ref as Ref
 import Id (genId)
 import Prelude (Unit, bind, discard, pure, (<$>), (==))
-import Todo.Repository (Description, Filter, IsComplete(..), Todo(..), TodoId, TodoRepo, getIsComplete)
+import Todo (Description, IsComplete(..), Todo(..), TodoId, getIsComplete)
+import Todo.Repository (Filter, TodoRepo)
 
 type Store = Ref.Ref (HM.HashMap TodoId (Todo TodoId))
 

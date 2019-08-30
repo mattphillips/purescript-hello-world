@@ -17,7 +17,8 @@ import Node.Express.Handler (Handler, HandlerM, nextThrow)
 import Node.Express.Request (getBody, getQueryParam, getRouteParam)
 import Node.Express.Response (sendJson, setStatus)
 import Node.Express.Response.SendStatus (sendStatus)
-import Todo.Repository (IsComplete(..), TodoId, TodoRepo, updateTodo)
+import Todo (IsComplete(..), TodoId, updateTodo)
+import Todo.Repository (TodoRepo)
 
 data TodoError = InvalidTodoId | TodoNotFound TodoId | InvalidArgument (NonEmptyList ForeignError)
 
