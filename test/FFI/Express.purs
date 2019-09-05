@@ -3,6 +3,7 @@ module Test.Express where
 import Prelude
 
 import Effect (Effect)
+import Effect.Ref (Ref, new)
 import Node.Express.App (App)
 import Node.Express.Types (Application, Request, Response)
 
@@ -19,7 +20,10 @@ type RequestOptions = {
 
 foreign import mkRequest :: RequestOptions -> Request
 
-foreign import mkResponse :: ∀ a. a -> Response
+foreign import _mkResponse :: ∀ a. a -> Response
+
+mkResponse :: Effect (Ref Response)
+mkResponse = new (_mkResponse unit)
 
 foreign import getStatus :: Response -> Int
 foreign import getBody :: ∀ a. Response -> a

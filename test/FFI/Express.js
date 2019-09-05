@@ -12,7 +12,7 @@ const httpMocks = require('node-mocks-http');
 
 exports.mkRequest = httpMocks.createRequest;
 
-exports.mkResponse = httpMocks.createResponse;
+exports._mkResponse = httpMocks.createResponse;
 
 exports.getStatus = res => res.statusCode;
 
