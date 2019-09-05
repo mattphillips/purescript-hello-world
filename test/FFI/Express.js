@@ -1,18 +1,20 @@
-exports.mkTestApplication =  () => require('express')();
+exports.mkTestApplication = () => require('express')();
 
 exports.mountApp = handler => application => {
   // install the handler aka application.method(path, function)
-  handler.value0(application)()
+  handler.value0(application)();
   return application;
-}
+};
 
-exports.sendRequest = app => req => res => () => app(req, res);
+exports.sendRequest = app => req => () => {
+  const res = httpMocks.createResponse();
+  app(req, res);
+  return res;
+};
 
 const httpMocks = require('node-mocks-http');
 
 exports.mkRequest = httpMocks.createRequest;
-
-exports._mkResponse = httpMocks.createResponse;
 
 exports.getStatus = res => res.statusCode;
 
