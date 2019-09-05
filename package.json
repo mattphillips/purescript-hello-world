@@ -29,5 +29,8 @@
     "node-fetch": "^2.6.0",
     "uuid": "^3.3.2",
     "uuid-validate": "^0.0.3"
+  },
+  "devDependencies": {
+    "node-mocks-http": "^1.7.6"
   }
 }
