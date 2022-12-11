@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/mattphillips/purescript-hello-world#readme",
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "morgan": "^1.9.1",
     "uuid": "^3.3.2",
     "uuid-validate": "^0.0.3"
